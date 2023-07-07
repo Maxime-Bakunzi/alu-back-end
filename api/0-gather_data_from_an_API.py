@@ -1,37 +1,29 @@
 #!/usr/bin/python3
 """
-Script to retrieve and display employee TODO list progress.
+Gathers data from an API based on employee ID.
 """
 
-import sys
 import requests
+import sys
+
+""" Function to gather data from an API """
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python3 0-gather_data_from_an_API.py <employee_id>")
-        sys.exit(1)
-
     employee_id = sys.argv[1]
+    url = "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
 
-    base_url = "https://jsonplaceholder.typicode.com"
-    user_url = f"{base_url}/users/{employee_id}"
-    todos_url = f"{base_url}/todos?userId={employee_id}"
+    todo = "https://jsonplaceholder.typicode.com/todos?userId={}"
+    todo = todo.format(employee_id)
 
-    try:
-        user_response = requests.get(user_url)
-        todos_response = requests.get(todos_url)
-        user_data = user_response.json()
-        todos_data = todos_response.json()
-    except requests.exceptions.RequestException as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+    user_info = requests.request("GET", url).json()
+    todo_info = requests.request("GET", todo).json()
 
-    employee_name = user_data.get("name")
-    total_tasks = len(todos_data)
-    completed_tasks = [task for task in todos_data if task.get("completed")]
+    employee_name = user_info.get("name")
+    total_tasks = list(filter(lambda x: (x["completed"] is True), todo_info))
+    task_com = len(total_tasks)
+    total_task_done = len(todo_info)
 
-    print(f"Employee {employee_name} is done with tasks({len(completed_tasks)}/{total_tasks}):")
-    for task in completed_tasks:
-        print(f"\t{task.get('title')}")
+    print("Employee {} is done with tasks({}/{}):".format(employee_name,
+          task_com, total_task_done))
 
-
+    [print("\t {}".format(task.get("title"))) for task in total_tasks]
